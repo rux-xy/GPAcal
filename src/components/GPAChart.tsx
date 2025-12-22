@@ -25,9 +25,9 @@ function GPAChart() {
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={data}
-          margin={{ top: 20, right: 30, left: 30, bottom: 10 }}
+          margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
         >
-          <XAxis dataKey="semester" />
+          <XAxis dataKey="semester" padding={{ left: 40, right: 40 }} />
           <YAxis domain={[0, 4]} />
           <Tooltip />
           <Line
