@@ -1,9 +1,8 @@
 import { Routes, Route } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
 import type { Course } from "./utils/gpaCalculator";
 
-// Pages
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import Analysis from "./pages/Analysis";
@@ -12,50 +11,47 @@ import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import { useAuth } from "./context/AuthContext";
+import {
+  getCourses,
+  addCourse,
+  updateCourse,
+  deleteCourse,
+} from "./lib/courseService";
 
 function App() {
-  const [courses, setCourses] = useState<Course[]>([
-    {
-      code: "COSC32152",
-      subject: "COSC",
-      level: 3,
-      semester: 1,
-      credits: 4,
-      name: "Advanced Programming",
-      grade: "A-",
-    },
-    {
-      code: "STAT20151",
-      subject: "STAT",
-      level: 2,
-      semester: 1,
-      credits: 3,
-      name: "Statistics I",
-      grade: "B+",
-    },
-    {
-      code: "PMAT10152",
-      subject: "PMAT",
-      level: 1,
-      semester: 2,
-      credits: 3,
-      name: "Pre-Calculus",
-      grade: "B",
-    },
-  ]);
+  const { user } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
 
-  function addCourse(course: Course) {
-    setCourses((prev) => [...prev, course]);
+  /* LOAD COURSES */
+  useEffect(() => {
+    if (!user) return;
+
+    getCourses(user.uid).then(setCourses);
+  }, [user]);
+
+  async function handleAdd(course: Course) {
+    if (!user) return;
+    await addCourse(user.uid, course);
+    setCourses(await getCourses(user.uid));
   }
 
-  function deleteCourse(code: string) {
-    setCourses((prev) => prev.filter((c) => c.code !== code));
+  async function handleUpdate(course: Course & { id?: string }) {
+    if (!user || !course.id) return;
+    await updateCourse(user.uid, course as any);
+    setCourses(await getCourses(user.uid));
   }
 
-  function updateCourse(updated: Course) {
-    setCourses((prev) =>
-      prev.map((c) => (c.code === updated.code ? updated : c))
-    );
+  async function handleDelete(code: string) {
+    if (!user) return;
+
+    const course = courses.find((c) => c.code === code);
+    if (!course?.id) return;
+
+    await deleteCourse(user.uid, course.id);
+    setCourses(await getCourses(user.uid));
   }
 
   return (
@@ -63,25 +59,60 @@ function App() {
       <Navbar />
 
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
         <Route
-          path="/courses"
+          path="/"
           element={
-            <Courses
-              courses={courses}
-              onAddCourse={addCourse}
-              onDeleteCourse={deleteCourse}
-              onUpdateCourse={updateCourse}
-            />
+            <ProtectedRoute>
+              <Dashboard courses={courses} />
+            </ProtectedRoute>
           }
         />
 
-        <Route path="/analysis" element={<Analysis courses={courses} />} />
-        <Route path="/graphs" element={<Graphs courses={courses} />} />
-        <Route path="/settings" element={<Settings />} />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <Courses
+                courses={courses}
+                onAddCourse={handleAdd}
+                onUpdateCourse={handleUpdate}
+                onDeleteCourse={handleDelete}
+              />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/analysis"
+          element={
+            <ProtectedRoute>
+              <Analysis courses={courses} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/graphs"
+          element={
+            <ProtectedRoute>
+              <Graphs courses={courses} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
         <Route path="/credits" element={<Credits />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
       </Routes>
     </>
   );

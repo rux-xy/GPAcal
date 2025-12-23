@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { Course } from "../utils/gpaCalculator";
 import { Pencil, Trash2, Plus } from "lucide-react";
+import { parseSubjectFromCode } from "../utils/courseParser";
 
 /* ---------------- PROPS ---------------- */
 
@@ -29,7 +30,7 @@ function CourseTable({
     credits: 0,
     grade: "",
     semester,
-    subject: "COSC",
+    subject: "UNKNOWN",
     level: 1,
   });
 
@@ -45,9 +46,17 @@ function CourseTable({
   ) {
     const { name, value } = e.target;
 
-    setNewCourse({
-      ...newCourse,
-      [name]: name === "credits" ? Number(value) : value,
+    setNewCourse((prev) => {
+      const updated: Course = {
+        ...prev,
+        [name]: name === "credits" ? Number(value) : value,
+      } as Course;
+
+      if (name === "code") {
+        updated.subject = parseSubjectFromCode(value);
+      }
+
+      return updated;
     });
   }
 
@@ -58,9 +67,19 @@ function CourseTable({
 
     const { name, value } = e.target;
 
-    setEditCourse({
-      ...editCourse,
-      [name]: name === "credits" ? Number(value) : value,
+    setEditCourse((prev) => {
+      if (!prev) return prev;
+
+      const updated: Course = {
+        ...prev,
+        [name]: name === "credits" ? Number(value) : value,
+      } as Course;
+
+      if (name === "code") {
+        updated.subject = parseSubjectFromCode(value);
+      }
+
+      return updated;
     });
   }
 
@@ -81,8 +100,8 @@ function CourseTable({
       credits: 0,
       grade: "",
       semester,
-      subject: newCourse.subject,
-      level: newCourse.level,
+      subject: "UNKNOWN",
+      level: 1,
     });
   }
 
@@ -93,7 +112,6 @@ function CourseTable({
 
   function saveEdit() {
     if (!editCourse) return;
-
     onUpdateCourse(editCourse);
     cancelEdit();
   }
@@ -210,7 +228,7 @@ function CourseTable({
                 name="code"
                 value={newCourse.code}
                 onChange={handleNewChange}
-                placeholder="Code"
+                placeholder="Code (e.g. STAT32652)"
                 className="border p-1 rounded w-full"
               />
             </td>

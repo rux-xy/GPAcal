@@ -6,6 +6,11 @@ import { type Course, calculateGPA } from "../utils/gpaCalculator";
 
 type SubjectFilter = "ALL" | "COSC" | "STAT" | "PMAT";
 
+/* ---------------- CONSTANTS ---------------- */
+
+// You can expand this later (Year 1–4 etc.)
+const SEMESTERS = [1, 2];
+
 /* ---------------- COMPONENT ---------------- */
 
 function Courses({
@@ -23,42 +28,34 @@ function Courses({
 
   const [selectedSubject, setSelectedSubject] = useState<SubjectFilter>("ALL");
 
-  /* ---------- DERIVED DATA ---------- */
+  /* ---------- FILTERED COURSES ---------- */
 
-  // Filter courses by subject
   const filteredCourses =
     selectedSubject === "ALL"
       ? courses
-      : courses.filter((course) => course.subject === selectedSubject);
+      : courses.filter((c) => c.subject === selectedSubject);
 
-  // Overall GPA
+  /* ---------- GPA ---------- */
+
   const overallGPA = calculateGPA(filteredCourses);
 
-  // Group courses by semester
-  const coursesBySemester = filteredCourses.reduce((acc, course) => {
-    if (!acc[course.semester]) {
-      acc[course.semester] = [];
-    }
-    acc[course.semester].push(course);
-    return acc;
-  }, {} as Record<number, Course[]>);
-
-  // Calculate GPA for a single semester
   function calculateSemesterGPA(semester: number) {
-    return calculateGPA(coursesBySemester[semester] || []);
+    const semesterCourses = filteredCourses.filter(
+      (c) => c.semester === semester
+    );
+    return calculateGPA(semesterCourses);
   }
 
   /* ---------- UI ---------- */
 
   return (
     <div className="p-6 space-y-6">
-      {/* PAGE TITLE */}
+      {/* TITLE */}
       <h1 className="text-2xl font-bold">Courses</h1>
 
-      {/* SUBJECT FILTER CARD */}
+      {/* SUBJECT FILTER */}
       <div className="border rounded-lg p-4 max-w-sm">
         <p className="text-sm text-gray-500 mb-2">Filter by Subject</p>
-
         <select
           value={selectedSubject}
           onChange={(e) => setSelectedSubject(e.target.value as SubjectFilter)}
@@ -71,16 +68,18 @@ function Courses({
         </select>
       </div>
 
-      {/* OVERALL GPA CARD */}
+      {/* OVERALL GPA */}
       <div className="border rounded-lg p-4 max-w-sm">
         <p className="text-sm text-gray-500">Calculated GPA</p>
         <p className="text-3xl font-bold">{overallGPA}</p>
       </div>
 
-      {/* SEMESTER SECTIONS */}
+      {/* SEMESTERS (ALWAYS RENDERED) */}
       <div className="space-y-8">
-        {Object.keys(coursesBySemester).map((semester) => {
-          const sem = Number(semester);
+        {SEMESTERS.map((semester) => {
+          const semesterCourses = filteredCourses.filter(
+            (c) => c.semester === semester
+          );
 
           return (
             <div key={semester} className="space-y-3">
@@ -90,14 +89,14 @@ function Courses({
               <div className="border rounded-lg p-3 max-w-xs bg-gray-50">
                 <p className="text-xs text-gray-500">Semester GPA</p>
                 <p className="text-2xl font-bold">
-                  {calculateSemesterGPA(sem)}
+                  {calculateSemesterGPA(semester)}
                 </p>
               </div>
 
-              {/* COURSE TABLE */}
+              {/* COURSE TABLE (ALWAYS SHOWN) */}
               <CourseTable
-                courses={coursesBySemester[sem]}
-                semester={sem}
+                courses={semesterCourses}
+                semester={semester}
                 onAddCourse={onAddCourse}
                 onDeleteCourse={onDeleteCourse}
                 onUpdateCourse={onUpdateCourse}

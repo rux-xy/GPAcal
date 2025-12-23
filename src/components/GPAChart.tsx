@@ -1,3 +1,5 @@
+import type { Course } from "../utils/gpaCalculator";
+import { calculateGPA } from "../utils/gpaCalculator";
 import {
   LineChart,
   Line,
@@ -7,27 +9,38 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-type GPAData = {
-  semester: string;
-  gpa: number;
+type GPAChartProps = {
+  courses: Course[];
 };
 
-const data: GPAData[] = [
-  { semester: "Y1 S1", gpa: 3.0 },
-  { semester: "Y1 S2", gpa: 3.2 },
-  { semester: "Y2 S1", gpa: 3.4 },
-  { semester: "Y2 S2", gpa: 3.42 },
-];
+function GPAChart({ courses }: GPAChartProps) {
+  if (courses.length === 0) {
+    return (
+      <div className="h-64 flex items-center justify-center text-gray-400">
+        No GPA data yet
+      </div>
+    );
+  }
 
-function GPAChart() {
+  // Group by semester
+  const semesterMap = courses.reduce((acc, course) => {
+    acc[course.semester] = acc[course.semester] || [];
+    acc[course.semester].push(course);
+    return acc;
+  }, {} as Record<number, Course[]>);
+
+  const data = Object.entries(semesterMap)
+    .map(([semester, list]) => ({
+      semester: `Semester ${semester}`,
+      gpa: calculateGPA(list),
+    }))
+    .sort((a, b) => a.semester.localeCompare(b.semester));
+
   return (
     <div className="w-full h-64">
       <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={data}
-          margin={{ top: 20, right: 20, left: 20, bottom: 10 }}
-        >
-          <XAxis dataKey="semester" padding={{ left: 40, right: 40 }} />
+        <LineChart data={data}>
+          <XAxis dataKey="semester" />
           <YAxis domain={[0, 4]} />
           <Tooltip />
           <Line
