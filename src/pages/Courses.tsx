@@ -29,6 +29,13 @@ function Courses() {
 
   const gpa = calculateGPA(courses);
 
+  function calculateSemesterGPA(semester: number) {
+    const semesterCourses = courses.filter(
+      (course) => course.semester === semester
+    );
+    return calculateGPA(semesterCourses);
+  }
+
   const coursesBySemester = courses.reduce((acc, course) => {
     if (!acc[course.semester]) {
       acc[course.semester] = [];
@@ -52,8 +59,16 @@ function Courses() {
 
       <div className="space-y-6">
         {Object.keys(coursesBySemester).map((semester) => (
-          <div key={semester} className="space-y-2">
+          <div key={semester} className="space-y-3">
             <h2 className="text-lg font-semibold">Semester {semester}</h2>
+
+            {/* Semester GPA card */}
+            <div className="border rounded-lg p-3 max-w-xs bg-gray-50">
+              <p className="text-xs text-gray-500">Semester GPA</p>
+              <p className="text-2xl font-bold">
+                {calculateSemesterGPA(Number(semester))}
+              </p>
+            </div>
 
             <CourseTable
               courses={coursesBySemester[Number(semester)]}
