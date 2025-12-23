@@ -1,6 +1,8 @@
 import { useState } from "react";
 import type { Course } from "../utils/gpaCalculator";
-import { Plus, Pencil, Trash2, Save, X } from "lucide-react";
+import { Pencil, Trash2, Plus } from "lucide-react";
+
+/* ---------------- PROPS ---------------- */
 
 type CourseTableProps = {
   courses: Course[];
@@ -10,6 +12,8 @@ type CourseTableProps = {
   onUpdateCourse: (course: Course) => void;
 };
 
+/* ---------------- COMPONENT ---------------- */
+
 function CourseTable({
   courses,
   semester,
@@ -17,21 +21,26 @@ function CourseTable({
   onDeleteCourse,
   onUpdateCourse,
 }: CourseTableProps) {
-  /* ---------------- Add course state ---------------- */
+  /* ---------- ADD COURSE STATE ---------- */
+
   const [newCourse, setNewCourse] = useState<Course>({
     code: "",
     name: "",
     credits: 0,
     grade: "",
     semester,
+    subject: "COSC",
+    level: 1,
   });
 
-  /* ---------------- Edit course state ---------------- */
+  /* ---------- EDIT COURSE STATE ---------- */
+
   const [editingCode, setEditingCode] = useState<string | null>(null);
   const [editCourse, setEditCourse] = useState<Course | null>(null);
 
-  /* ---------------- Add handlers ---------------- */
-  function handleChange(
+  /* ---------- HANDLERS ---------- */
+
+  function handleNewChange(
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) {
     const { name, value } = e.target;
@@ -40,33 +49,6 @@ function CourseTable({
       ...newCourse,
       [name]: name === "credits" ? Number(value) : value,
     });
-  }
-
-  function handleAdd() {
-    if (
-      !newCourse.code ||
-      !newCourse.name ||
-      newCourse.credits <= 0 ||
-      !newCourse.grade
-    ) {
-      return;
-    }
-
-    onAddCourse(newCourse);
-
-    setNewCourse({
-      code: "",
-      name: "",
-      credits: 0,
-      grade: "",
-      semester,
-    });
-  }
-
-  /* ---------------- Edit handlers ---------------- */
-  function startEdit(course: Course) {
-    setEditingCode(course.code);
-    setEditCourse({ ...course });
   }
 
   function handleEditChange(
@@ -82,12 +64,38 @@ function CourseTable({
     });
   }
 
+  function addCourse() {
+    if (
+      !newCourse.code ||
+      !newCourse.name ||
+      newCourse.credits <= 0 ||
+      !newCourse.grade
+    )
+      return;
+
+    onAddCourse(newCourse);
+
+    setNewCourse({
+      code: "",
+      name: "",
+      credits: 0,
+      grade: "",
+      semester,
+      subject: newCourse.subject,
+      level: newCourse.level,
+    });
+  }
+
+  function startEdit(course: Course) {
+    setEditingCode(course.code);
+    setEditCourse({ ...course });
+  }
+
   function saveEdit() {
     if (!editCourse) return;
 
     onUpdateCourse(editCourse);
-    setEditingCode(null);
-    setEditCourse(null);
+    cancelEdit();
   }
 
   function cancelEdit() {
@@ -96,6 +104,7 @@ function CourseTable({
   }
 
   /* ---------------- UI ---------------- */
+
   return (
     <div className="border rounded-lg overflow-hidden">
       <table className="w-full text-sm">
@@ -110,11 +119,10 @@ function CourseTable({
         </thead>
 
         <tbody>
-          {/* Existing courses */}
+          {/* EXISTING COURSES */}
           {courses.map((course) =>
             editingCode === course.code && editCourse ? (
-              /* -------- EDIT MODE -------- */
-              <tr key={course.code} className="border-t bg-yellow-50">
+              <tr key={course.code} className="bg-yellow-50 border-t">
                 <td className="p-2">{course.code}</td>
 
                 <td className="p-2">
@@ -122,27 +130,28 @@ function CourseTable({
                     name="name"
                     value={editCourse.name}
                     onChange={handleEditChange}
-                    className="w-full border p-1 rounded"
+                    className="border p-1 rounded w-full"
                   />
                 </td>
 
-                <td className="p-2">
+                <td className="p-2 text-center">
                   <input
                     type="number"
                     name="credits"
                     value={editCourse.credits}
                     onChange={handleEditChange}
-                    className="w-full border p-1 rounded text-center"
+                    className="border p-1 rounded w-20 text-center"
                   />
                 </td>
 
-                <td className="p-2">
+                <td className="p-2 text-center">
                   <select
                     name="grade"
                     value={editCourse.grade}
                     onChange={handleEditChange}
-                    className="w-full border p-1 rounded text-center"
+                    className="border p-1 rounded"
                   >
+                    <option value="">Grade</option>
                     <option>A+</option>
                     <option>A</option>
                     <option>A-</option>
@@ -158,64 +167,51 @@ function CourseTable({
                 </td>
 
                 <td className="p-2 text-center space-x-2">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={saveEdit}
-                      className="text-green-600 hover:text-green-800"
-                      title="Save"
-                    >
-                      <Save size={16} />
-                    </button>
-
-                    <button
-                      onClick={cancelEdit}
-                      className="text-gray-500 hover:text-gray-700"
-                      title="Cancel"
-                    >
-                      <X size={16} />
-                    </button>
-                  </div>
+                  <button onClick={saveEdit} className="text-green-600 text-xs">
+                    Save
+                  </button>
+                  <button
+                    onClick={cancelEdit}
+                    className="text-gray-500 text-xs"
+                  >
+                    Cancel
+                  </button>
                 </td>
               </tr>
             ) : (
-              /* -------- VIEW MODE -------- */
               <tr key={course.code} className="border-t">
                 <td className="p-3">{course.code}</td>
                 <td className="p-3">{course.name}</td>
                 <td className="p-3 text-center">{course.credits}</td>
                 <td className="p-3 text-center">{course.grade}</td>
-                <td className="p-3 text-center space-x-2">
-                  <div className="flex justify-center gap-2">
-                    <button
-                      onClick={() => startEdit(course)}
-                      className="text-blue-600 hover:text-blue-800"
-                      title="Edit"
-                    >
-                      <Pencil size={16} />
-                    </button>
+                <td className="p-3 text-center space-x-3">
+                  <button
+                    onClick={() => startEdit(course)}
+                    className="text-blue-600"
+                  >
+                    <Pencil size={14} />
+                  </button>
 
-                    <button
-                      onClick={() => onDeleteCourse(course.code)}
-                      className="text-red-600 hover:text-red-800"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => onDeleteCourse(course.code)}
+                    className="text-red-600"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </td>
               </tr>
             )
           )}
 
-          {/* -------- ADD ROW -------- */}
+          {/* ADD COURSE ROW */}
           <tr className="border-t bg-gray-50">
             <td className="p-2">
               <input
                 name="code"
                 value={newCourse.code}
-                onChange={handleChange}
+                onChange={handleNewChange}
                 placeholder="Code"
-                className="w-full border p-1 rounded"
+                className="border p-1 rounded w-full"
               />
             </td>
 
@@ -223,9 +219,9 @@ function CourseTable({
               <input
                 name="name"
                 value={newCourse.name}
-                onChange={handleChange}
+                onChange={handleNewChange}
                 placeholder="Name"
-                className="w-full border p-1 rounded"
+                className="border p-1 rounded w-full"
               />
             </td>
 
@@ -234,9 +230,9 @@ function CourseTable({
                 type="number"
                 name="credits"
                 value={newCourse.credits || ""}
-                onChange={handleChange}
+                onChange={handleNewChange}
                 placeholder="Credits"
-                className="w-full border p-1 rounded text-center"
+                className="border p-1 rounded w-full text-center"
               />
             </td>
 
@@ -244,8 +240,8 @@ function CourseTable({
               <select
                 name="grade"
                 value={newCourse.grade}
-                onChange={handleChange}
-                className="w-full border p-1 rounded text-center"
+                onChange={handleNewChange}
+                className="border p-1 rounded w-full"
               >
                 <option value="">Grade</option>
                 <option>A+</option>
@@ -263,11 +259,7 @@ function CourseTable({
             </td>
 
             <td className="p-2 text-center">
-              <button
-                onClick={handleAdd}
-                className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700"
-                title="Add course"
-              >
+              <button onClick={addCourse} className="text-green-600">
                 <Plus size={16} />
               </button>
             </td>

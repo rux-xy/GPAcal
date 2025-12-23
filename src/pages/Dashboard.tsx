@@ -1,4 +1,4 @@
-import GPACard from "../components/GPAcard";
+import GPACard from "../components/GPACard";
 import GPAChart from "../components/GPAChart";
 
 function Dashboard() {

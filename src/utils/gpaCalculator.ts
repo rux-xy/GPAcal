@@ -1,11 +1,16 @@
+export type SubjectType = "COSC" | "STAT" | "PMAT";
+
 export type Course = {
-  code: string;
+  code: string; // e.g. COSC32152
+  subject: SubjectType; // COSC | STAT | PMAT
+  level: number; // 1 | 2 | 3
+  semester: number; // 1 | 2
+  credits: number; // 2 | 3 | 4
   name: string;
-  credits: number;
-  grade: string;
-  semester: number;
+  grade: string; // A, A-, B+, etc.
 };
 
+/* Letter → GPA map */
 const gradePoints: Record<string, number> = {
   "A+": 4.0,
   A: 4.0,
@@ -21,19 +26,16 @@ const gradePoints: Record<string, number> = {
 };
 
 export function calculateGPA(courses: Course[]): number {
+  if (courses.length === 0) return 0;
+
   let totalPoints = 0;
   let totalCredits = 0;
 
   courses.forEach((course) => {
-    const points = gradePoints[course.grade];
-
-    if (points !== undefined) {
-      totalPoints += points * course.credits;
-      totalCredits += course.credits;
-    }
+    const points = gradePoints[course.grade] ?? 0;
+    totalPoints += points * course.credits;
+    totalCredits += course.credits;
   });
-
-  if (totalCredits === 0) return 0;
 
   return Number((totalPoints / totalCredits).toFixed(2));
 }
