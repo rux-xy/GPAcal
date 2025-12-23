@@ -48,6 +48,16 @@ function Courses() {
     setCourses((prev) => [...prev, course]);
   }
 
+  function handleDeleteCourse(code: string) {
+    setCourses((prev) => prev.filter((course) => course.code !== code));
+  }
+
+  function handleUpdateCourse(updated: Course) {
+    setCourses((prev) =>
+      prev.map((course) => (course.code === updated.code ? updated : course))
+    );
+  }
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Courses</h1>
@@ -74,6 +84,8 @@ function Courses() {
               courses={coursesBySemester[Number(semester)]}
               semester={Number(semester)}
               onAddCourse={handleAddCourse}
+              onDeleteCourse={handleDeleteCourse}
+              onUpdateCourse={handleUpdateCourse}
             />
           </div>
         ))}
