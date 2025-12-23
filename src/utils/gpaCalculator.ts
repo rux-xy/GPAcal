@@ -3,6 +3,7 @@ export type Course = {
   name: string;
   credits: number;
   grade: number;
+  semester: number;
 };
 
 export function calculateGPA(courses: Course[]): number {
