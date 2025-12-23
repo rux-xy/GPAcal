@@ -37,6 +37,10 @@ function Courses() {
     return acc;
   }, {} as Record<number, Course[]>);
 
+  function handleAddCourse(course: Course) {
+    setCourses((prev) => [...prev, course]);
+  }
+
   return (
     <div className="p-6 space-y-6">
       <h1 className="text-2xl font-bold">Courses</h1>
@@ -51,7 +55,11 @@ function Courses() {
           <div key={semester} className="space-y-2">
             <h2 className="text-lg font-semibold">Semester {semester}</h2>
 
-            <CourseTable courses={coursesBySemester[Number(semester)]} />
+            <CourseTable
+              courses={coursesBySemester[Number(semester)]}
+              semester={Number(semester)}
+              onAddCourse={handleAddCourse}
+            />
           </div>
         ))}
       </div>

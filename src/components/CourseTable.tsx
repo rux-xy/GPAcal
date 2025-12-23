@@ -1,10 +1,46 @@
+import { useState } from "react";
 import type { Course } from "../utils/gpaCalculator";
 
 type CourseTableProps = {
   courses: Course[];
+  semester: number;
+  onAddCourse: (course: Course) => void;
 };
 
-function CourseTable({ courses }: CourseTableProps) {
+function CourseTable({ courses, semester, onAddCourse }: CourseTableProps) {
+  const [newCourse, setNewCourse] = useState<Course>({
+    code: "",
+    name: "",
+    credits: 0,
+    grade: 0,
+    semester,
+  });
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+
+    setNewCourse({
+      ...newCourse,
+      [name]: name === "credits" || name === "grade" ? Number(value) : value,
+    });
+  }
+
+  function handleAdd() {
+    if (!newCourse.code || !newCourse.name || newCourse.credits <= 0) {
+      return;
+    }
+
+    onAddCourse(newCourse);
+
+    setNewCourse({
+      code: "",
+      name: "",
+      credits: 0,
+      grade: 0,
+      semester,
+    });
+  }
+
   return (
     <div className="border rounded-lg overflow-hidden">
       <table className="w-full text-sm">
@@ -14,26 +50,75 @@ function CourseTable({ courses }: CourseTableProps) {
             <th className="p-3 text-left">Name</th>
             <th className="p-3 text-center">Credits</th>
             <th className="p-3 text-center">Grade</th>
+            <th className="p-3"></th>
           </tr>
         </thead>
 
         <tbody>
-          {courses.length === 0 ? (
-            <tr>
-              <td colSpan={4} className="p-4 text-center text-gray-500">
-                No courses added yet
-              </td>
+          {courses.map((course) => (
+            <tr key={course.code} className="border-t">
+              <td className="p-3">{course.code}</td>
+              <td className="p-3">{course.name}</td>
+              <td className="p-3 text-center">{course.credits}</td>
+              <td className="p-3 text-center">{course.grade}</td>
+              <td className="p-3"></td>
             </tr>
-          ) : (
-            courses.map((course) => (
-              <tr key={course.code} className="border-t">
-                <td className="p-3">{course.code}</td>
-                <td className="p-3">{course.name}</td>
-                <td className="p-3 text-center">{course.credits}</td>
-                <td className="p-3 text-center">{course.grade}</td>
-              </tr>
-            ))
-          )}
+          ))}
+
+          {/* Input row */}
+          <tr className="border-t bg-gray-50">
+            <td className="p-2">
+              <input
+                name="code"
+                value={newCourse.code}
+                onChange={handleChange}
+                placeholder="Code"
+                className="w-full border p-1 rounded"
+              />
+            </td>
+
+            <td className="p-2">
+              <input
+                name="name"
+                value={newCourse.name}
+                onChange={handleChange}
+                placeholder="Name"
+                className="w-full border p-1 rounded"
+              />
+            </td>
+
+            <td className="p-2">
+              <input
+                type="number"
+                name="credits"
+                value={newCourse.credits || ""}
+                onChange={handleChange}
+                placeholder="Credits"
+                className="w-full border p-1 rounded text-center"
+              />
+            </td>
+
+            <td className="p-2">
+              <input
+                type="number"
+                step="0.1"
+                name="grade"
+                value={newCourse.grade || ""}
+                onChange={handleChange}
+                placeholder="Grade"
+                className="w-full border p-1 rounded text-center"
+              />
+            </td>
+
+            <td className="p-2 text-center">
+              <button
+                onClick={handleAdd}
+                className="bg-blue-600 text-white px-3 py-1 rounded text-xs hover:bg-blue-700"
+              >
+                Add
+              </button>
+            </td>
+          </tr>
         </tbody>
       </table>
     </div>
