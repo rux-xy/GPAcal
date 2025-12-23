@@ -12,21 +12,28 @@ function CourseTable({ courses, semester, onAddCourse }: CourseTableProps) {
     code: "",
     name: "",
     credits: 0,
-    grade: 0,
+    grade: "",
     semester,
   });
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) {
     const { name, value } = e.target;
 
     setNewCourse({
       ...newCourse,
-      [name]: name === "credits" || name === "grade" ? Number(value) : value,
+      [name]: name === "credits" ? Number(value) : value,
     });
   }
 
   function handleAdd() {
-    if (!newCourse.code || !newCourse.name || newCourse.credits <= 0) {
+    if (
+      !newCourse.code ||
+      !newCourse.name ||
+      newCourse.credits <= 0 ||
+      !newCourse.grade
+    ) {
       return;
     }
 
@@ -36,7 +43,7 @@ function CourseTable({ courses, semester, onAddCourse }: CourseTableProps) {
       code: "",
       name: "",
       credits: 0,
-      grade: 0,
+      grade: "",
       semester,
     });
   }
@@ -99,15 +106,25 @@ function CourseTable({ courses, semester, onAddCourse }: CourseTableProps) {
             </td>
 
             <td className="p-2">
-              <input
-                type="number"
-                step="0.1"
+              <select
                 name="grade"
-                value={newCourse.grade || ""}
+                value={newCourse.grade}
                 onChange={handleChange}
-                placeholder="Grade"
                 className="w-full border p-1 rounded text-center"
-              />
+              >
+                <option value="">Grade</option>
+                <option>A+</option>
+                <option>A</option>
+                <option>A-</option>
+                <option>B+</option>
+                <option>B</option>
+                <option>B-</option>
+                <option>C+</option>
+                <option>C</option>
+                <option>C-</option>
+                <option>D</option>
+                <option>F</option>
+              </select>
             </td>
 
             <td className="p-2 text-center">
