@@ -1,11 +1,8 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import { useEffect, useState } from "react";
 import Navbar from "./components/Navbar";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./context/AuthContext";
 import type { Course } from "./utils/gpaCalculator";
 
-// Pages
 import Dashboard from "./pages/Dashboard";
 import Courses from "./pages/Courses";
 import Analysis from "./pages/Analysis";
@@ -14,64 +11,62 @@ import Settings from "./pages/Settings";
 import Credits from "./pages/Credits";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import ProtectedRoute from "./components/ProtectedRoute";
+
+import { useAuth } from "./context/AuthContext";
+import {
+  getCourses,
+  addCourse,
+  updateCourse,
+  deleteCourse,
+} from "./lib/courseService";
 
 function App() {
   const { user } = useAuth();
+  const [courses, setCourses] = useState<Course[]>([]);
 
-  const [courses, setCourses] = useState<Course[]>([
-    {
-      code: "COSC32152",
-      subject: "COSC",
-      level: 3,
-      semester: 1,
-      credits: 4,
-      name: "Advanced Programming",
-      grade: "A-",
-    },
-    {
-      code: "STAT20151",
-      subject: "STAT",
-      level: 2,
-      semester: 1,
-      credits: 3,
-      name: "Statistics I",
-      grade: "B+",
-    },
-  ]);
+  /* LOAD COURSES */
+  useEffect(() => {
+    if (!user) return;
 
-  function addCourse(course: Course) {
-    setCourses((prev) => [...prev, course]);
+    getCourses(user.uid).then(setCourses);
+  }, [user]);
+
+  async function handleAdd(course: Course) {
+    if (!user) return;
+    await addCourse(user.uid, course);
+    setCourses(await getCourses(user.uid));
   }
 
-  function deleteCourse(code: string) {
-    setCourses((prev) => prev.filter((c) => c.code !== code));
+  async function handleUpdate(course: Course & { id?: string }) {
+    if (!user || !course.id) return;
+    await updateCourse(user.uid, course as any);
+    setCourses(await getCourses(user.uid));
   }
 
-  function updateCourse(updated: Course) {
-    setCourses((prev) =>
-      prev.map((c) => (c.code === updated.code ? updated : c))
-    );
+  async function handleDelete(code: string) {
+    if (!user) return;
+
+    const course = courses.find((c) => c.code === code);
+    if (!course?.id) return;
+
+    await deleteCourse(user.uid, course.id);
+    setCourses(await getCourses(user.uid));
   }
 
   return (
     <>
-      {/* Navbar only when logged in */}
-      {user && <Navbar />}
+      <Navbar />
 
       <Routes>
-        {/* Public routes */}
-        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-        <Route
-          path="/register"
-          element={user ? <Navigate to="/" /> : <Register />}
-        />
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
 
-        {/* Protected routes */}
         <Route
           path="/"
           element={
             <ProtectedRoute>
-              <Dashboard />
+              <Dashboard courses={courses} />
             </ProtectedRoute>
           }
         />
@@ -82,9 +77,9 @@ function App() {
             <ProtectedRoute>
               <Courses
                 courses={courses}
-                onAddCourse={addCourse}
-                onDeleteCourse={deleteCourse}
-                onUpdateCourse={updateCourse}
+                onAddCourse={handleAdd}
+                onUpdateCourse={handleUpdate}
+                onDeleteCourse={handleDelete}
               />
             </ProtectedRoute>
           }
@@ -117,14 +112,7 @@ function App() {
           }
         />
 
-        <Route
-          path="/credits"
-          element={
-            <ProtectedRoute>
-              <Credits />
-            </ProtectedRoute>
-          }
-        />
+        <Route path="/credits" element={<Credits />} />
       </Routes>
     </>
   );

@@ -1,15 +1,11 @@
-import type { SubjectType } from "./gpaCalculator";
+import type { SubjectCode } from "./gpaCalculator";
 
-export function parseCourseCode(code: string) {
-  const subject = code.substring(0, 4) as SubjectType;
-  const level = Number(code[4]);
-  const semester = Number(code[5]);
-  const credits = Number(code[code.length - 1]);
+export function parseSubjectFromCode(code: string): SubjectCode {
+  const prefix = code.slice(0, 4).toUpperCase();
 
-  return {
-    subject,
-    level,
-    semester,
-    credits,
-  };
+  if (prefix === "COSC") return "COSC";
+  if (prefix === "STAT") return "STAT";
+  if (prefix === "PMAT") return "PMAT";
+
+  return "UNKNOWN";
 }

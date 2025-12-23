@@ -1,13 +1,16 @@
 export type SubjectType = "COSC" | "STAT" | "PMAT";
 
+export type SubjectCode = "COSC" | "STAT" | "PMAT" | "UNKNOWN";
+
 export type Course = {
-  code: string; // e.g. COSC32152
-  subject: SubjectType; // COSC | STAT | PMAT
-  level: number; // 1 | 2 | 3
-  semester: number; // 1 | 2
-  credits: number; // 2 | 3 | 4
+  id?: string;
+  code: string;
   name: string;
-  grade: string; // A, A-, B+, etc.
+  credits: number;
+  grade: string;
+  semester: number;
+  subject: SubjectCode;
+  level: number;
 };
 
 /* Letter → GPA map */
