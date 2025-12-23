@@ -1,6 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { useState } from "react";
 import Navbar from "./components/Navbar";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { useAuth } from "./context/AuthContext";
 import type { Course } from "./utils/gpaCalculator";
 
 // Pages
@@ -14,6 +16,8 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 function App() {
+  const { user, loading } = useAuth();
+
   const [courses, setCourses] = useState<Course[]>([
     {
       code: "COSC32152",
@@ -58,30 +62,93 @@ function App() {
     );
   }
 
+  // Prevent flicker while Firebase restores session
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <>
-      <Navbar />
+      {/* Show Navbar only when logged in */}
+      {user && <Navbar />}
 
       <Routes>
-        <Route path="/" element={<Dashboard />} />
+        {/* Public routes */}
         <Route
-          path="/courses"
+          path="/login"
+          element={!user ? <Login /> : <Navigate to="/" />}
+        />
+        <Route
+          path="/register"
+          element={!user ? <Register /> : <Navigate to="/" />}
+        />
+
+        {/* Protected routes */}
+        <Route
+          path="/"
           element={
-            <Courses
-              courses={courses}
-              onAddCourse={addCourse}
-              onDeleteCourse={deleteCourse}
-              onUpdateCourse={updateCourse}
-            />
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
           }
         />
 
-        <Route path="/analysis" element={<Analysis courses={courses} />} />
-        <Route path="/graphs" element={<Graphs courses={courses} />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/credits" element={<Credits />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route
+          path="/courses"
+          element={
+            <ProtectedRoute>
+              <Courses
+                courses={courses}
+                onAddCourse={addCourse}
+                onDeleteCourse={deleteCourse}
+                onUpdateCourse={updateCourse}
+              />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/analysis"
+          element={
+            <ProtectedRoute>
+              <Analysis courses={courses} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/graphs"
+          element={
+            <ProtectedRoute>
+              <Graphs courses={courses} />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/settings"
+          element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/credits"
+          element={
+            <ProtectedRoute>
+              <Credits />
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Fallback */}
+        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
   );

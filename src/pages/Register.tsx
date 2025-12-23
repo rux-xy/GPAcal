@@ -3,6 +3,7 @@ import { useState } from "react";
 import { auth } from "../lib/firebase";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Register() {
   const { loginWithGoogle } = useAuth();
@@ -59,10 +60,10 @@ export default function Register() {
 
         <button
           onClick={handleGoogle}
-          className="w-full border py-2 rounded flex items-center justify-center gap-2"
+          className="w-full border flex items-center justify-center gap-2 py-2 rounded hover:bg-gray-50"
         >
-          <img src="/google.svg" className="h-4" />
-          Sign up with Google
+          <FcGoogle size={20} />
+          <span>Login with Google</span>
         </button>
 
         <p className="text-sm text-center">

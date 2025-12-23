@@ -3,6 +3,7 @@ import { useState } from "react";
 import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
+import { FcGoogle } from "react-icons/fc";
 
 export default function Login() {
   const { loginWithGoogle } = useAuth();
@@ -61,10 +62,10 @@ export default function Login() {
 
           <button
             onClick={handleGoogle}
-            className="w-full border py-2 rounded flex items-center justify-center gap-2"
+            className="w-full border flex items-center justify-center gap-2 py-2 rounded hover:bg-gray-50"
           >
-            <img src="/google.svg" className="h-4" />
-            Login with Google
+            <FcGoogle size={20} />
+            <span>Login with Google</span>
           </button>
 
           <p className="text-sm text-center">
