@@ -16,7 +16,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 
 function App() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
 
   const [courses, setCourses] = useState<Course[]>([
     {
@@ -37,15 +37,6 @@ function App() {
       name: "Statistics I",
       grade: "B+",
     },
-    {
-      code: "PMAT10152",
-      subject: "PMAT",
-      level: 1,
-      semester: 2,
-      credits: 3,
-      name: "Pre-Calculus",
-      grade: "B",
-    },
   ]);
 
   function addCourse(course: Course) {
@@ -62,29 +53,17 @@ function App() {
     );
   }
 
-  // Prevent flicker while Firebase restores session
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        Loading...
-      </div>
-    );
-  }
-
   return (
     <>
-      {/* Show Navbar only when logged in */}
+      {/* Navbar only when logged in */}
       {user && <Navbar />}
 
       <Routes>
         {/* Public routes */}
-        <Route
-          path="/login"
-          element={!user ? <Login /> : <Navigate to="/" />}
-        />
+        <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
         <Route
           path="/register"
-          element={!user ? <Register /> : <Navigate to="/" />}
+          element={user ? <Navigate to="/" /> : <Register />}
         />
 
         {/* Protected routes */}
@@ -146,9 +125,6 @@ function App() {
             </ProtectedRoute>
           }
         />
-
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </>
   );
