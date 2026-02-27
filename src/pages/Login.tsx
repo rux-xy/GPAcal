@@ -77,8 +77,14 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right placeholder */}
-      <div className="bg-gray-100" />
+      {/* Right - Image section */}
+      <div className="bg-gray-100 flex items-center justify-center">
+        <img
+          src="src/assets/6227297.jpg"
+          alt="Login illustration"
+          className="w-full h-full object-cover"
+        />
+      </div>
     </div>
   );
 }
