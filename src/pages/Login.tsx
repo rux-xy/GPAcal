@@ -4,6 +4,7 @@ import { auth } from "../lib/firebase";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
+import loginImg from "../assets/6227297.jpg";
 
 export default function Login() {
   const { loginWithGoogle } = useAuth();
@@ -80,7 +81,7 @@ export default function Login() {
       {/* Right - Image section */}
       <div className="bg-gray-100 flex items-center justify-center">
         <img
-          src="src/assets/6227297.jpg"
+          src={loginImg}
           alt="Login illustration"
           className="w-full h-full object-cover"
         />
